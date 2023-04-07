@@ -1,0 +1,12 @@
+runner:
+  # <tool-name>:
+  #   cmd: <command> # (required)
+  #   errorformat: # (optional if you use `format`)
+  #     - <list of errorformat>
+  #   format: <format-name> # (optional if you use `errorformat`. e.g. golint,rdjson,rdjsonl)
+  #   level: <level> # (optional. same as -level flag. [info,warning,error])
+  #   name: <tool-name> # (optional. you can overwrite <tool-name> defined by runner key)
+
+  golangci-lint:
+    cmd: make golangci-lint TAGS=unit
+    format: golangci-lint

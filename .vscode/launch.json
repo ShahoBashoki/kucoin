@@ -1,0 +1,60 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "configurations": [
+    {
+      "args": [
+        "-test.run",
+        "MyTestFunction"
+      ],
+      "logOutput": "dap",
+      "mode": "test",
+      "name": "Launch test function",
+      "program": "${workspaceFolder}",
+      "request": "launch",
+      "showLog": true,
+      "type": "go"
+    },
+    {
+      "logOutput": "dap",
+      "mode": "auto",
+      "name": "Launch Package",
+      "program": "${fileDirname}",
+      "request": "launch",
+      "showLog": true,
+      "type": "go"
+    },
+    {
+      // https://github.com/golang/vscode-go/blob/master/docs/settings.md#godelveconfig
+      "logOutput": "dap",
+      "mode": "debug",
+      "name": "Launch file",
+      "program": "${file}",
+      "request": "launch",
+      "showLog": true,
+      "type": "go"
+    },
+    {
+      "host": "127.0.0.1",
+      "logOutput": "dap",
+      "mode": "remote",
+      "name": "Connect to server",
+      "port": 2345,
+      "remotePath": "${workspaceFolder}",
+      "request": "attach",
+      "showLog": true,
+      "type": "go"
+    },
+    {
+      "logOutput": "dap",
+      "mode": "local",
+      "name": "Attach to Process",
+      "processId": 0,
+      "request": "attach",
+      "showLog": true,
+      "type": "go"
+    }
+  ],
+  "version": "0.2.0"
+}

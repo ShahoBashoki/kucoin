@@ -1,1 +1,1 @@
-# kucoin
+# kucoin_go

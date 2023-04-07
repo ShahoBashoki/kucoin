@@ -1,0 +1,36 @@
+{
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  },
+  "editor.guides.bracketPairs": "active",
+  "editor.inlineSuggest.enabled": true,
+  "editor.tabSize": 2,
+  "go.coverOnSave": true,
+  "go.coverageDecorator": {
+    "coveredBorderColor": "rgba(64,128,128,0.5)",
+    "coveredGutterStyle": "blockgreen",
+    "coveredHighlightColor": "rgba(64,128,128,0.5)",
+    "type": "gutter",
+    "uncoveredBorderColor": "rgba(128,64,64,0.25)",
+    "uncoveredGutterStyle": "blockred",
+    "uncoveredHighlightColor": "rgba(128,64,64,0.25)"
+  },
+  "go.lintFlags": [
+    "--new"
+  ],
+  "go.lintTool": "golangci-lint",
+  "go.toolsManagement.autoUpdate": true,
+  "gopls": {
+    "formatting.gofumpt": true,
+    "ui.diagnostic.analyses": {
+      "fieldalignment": true,
+      "shadow": true,
+      "unusedparams": false,
+      "unusedwrite": true,
+      "useany": true
+    },
+    "ui.semanticTokens": true
+  },
+  "redhat.telemetry.enabled": true,
+  "workbench.iconTheme": "material-icon-theme"
+}

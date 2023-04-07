@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# <type>(<scope>): <summary>
+#
+# <Describe the motivation behind this change - explain WHY you are making this change. Wrap all lines
+# at 100 characters.>
+#
+# issue #<issue number>
+# ────────────────────────────────────────── 100 chars ────────────────────────────────────────────┤
+
+# Example Commit Messages
+# =======================
+
+# ─── Example: Simple refactor ────────────────────────────────────────────────────────────────────┤
+# refactor(core): rename refreshDynamicEmbeddedViews to refreshEmbeddedViews
+#
+# Improve code readability. The original name no longer matches how the function is used.
+#
+# issue #12345
+# ─────────────────────────────────────────────────────────────────────────────────────────────────┤
+
+# ─── Example: Simple docs change ─────────────────────────────────────────────────────────────────┤
+# docs: clarify the service limitation in providers.md guide
+#
+# issue #12345
+# ─────────────────────────────────────────────────────────────────────────────────────────────────┤
+
+# ─── Example: A bug fix ──────────────────────────────────────────────────────────────────────────┤
+# fix(ngcc): ensure lockfile is removed when `analyzeFn` fails
+#
+# Previously an error thrown in the `analyzeFn` would cause the ngcc process to exit immediately
+# without removing the lockfile, and potentially before the unlocker process had been successfully
+# spawned resulting in the lockfile being orphaned and left behind.
+#
+# Now we catch these errors and remove the lockfile as needed.
+#
+# issue #12345
+# ─────────────────────────────────────────────────────────────────────────────────────────────────┤
+
+# ─── Example: Breaking change ────────────────────────────────────────────────────────────────────┤
+# feat(bazel): simplify ng_package by dropping esm5 and fesm5
+#
+# esm5 and fesm5 distributions are no longer needed and have been deprecated in the past.
+#
+# https://v9.angular.io/guide/deprecations#esm5-and-fesm5-code-formats-in-angular-npm-packages
+#
+# This commit modifies ng_package to no longer distribute these two formats in npm packages built by
+# ng_package (e.g. @angular/core).
+#
+# This commit intentionally doesn't fully clean up the ng_package rule to remove all traces of esm5
+# and fems5 build artifacts as that is a bigger cleanup and currently we are narrowing down the
+# scope of this change to the MVP needed for v10, which in this case is 'do not put esm5 and fesm5'
+# into the npm packages.
+#
+# More cleanup to follow: https://angular-team.atlassian.net/browse/FW-2143
+#
+# BREAKING CHANGE: esm5 and fesm5 format is no longer distributed in Angular's npm packages e.g.
+# @angular/core
+#
+# Angular CLI will automatically downlevel the code to es5 if differential loading is enabled in the
+# Angular project, so no action is required from Angular CLI users.
+#
+# If you are not using Angular CLI to build your application or library, and you need to be able to
+# build es5 artifacts, then you will need to downlevel the distributed Angular code to es5 on your
+# own.
+#
+#
+# issue #12345
+# ─────────────────────────────────────────────────────────────────────────────────────────────────┤

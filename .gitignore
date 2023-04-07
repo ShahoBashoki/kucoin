@@ -1,0 +1,8 @@
+build/
+profile/
+
+### dotenv ###
+.env
+
+file.json
+file.log
