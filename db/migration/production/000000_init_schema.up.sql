@@ -34,5 +34,32 @@ CREATE TABLE IF NOT EXISTS kucoin_order (
   post_only BOOL NOT NULL,
   stop_triggered BOOL NOT NULL,
   CONSTRAINT pk PRIMARY KEY (id),
+  CONSTRAINT uq_kucoin_id UNIQUE (kucoin_id),
+  INDEX ix_created_at (created_at) USING HASH
+);
+
+CREATE TABLE IF NOT EXISTS ticker (
+  id UUID NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  deleted_at TIMESTAMP,
+  average_price STRING NOT NULL,
+  buy STRING NOT NULL,
+  change_price STRING NOT NULL,
+  change_rate STRING NOT NULL,
+  high STRING NOT NULL,
+  last STRING NOT NULL,
+  low STRING NOT NULL,
+  maker_coefficient STRING NOT NULL,
+  maker_fee_rate STRING NOT NULL,
+  sell STRING NOT NULL,
+  symbol STRING NOT NULL,
+  symbol_name STRING NOT NULL,
+  taker_coefficient STRING NOT NULL,
+  taker_fee_rate STRING NOT NULL,
+  vol STRING NOT NULL,
+  vol_value STRING NOT NULL,
+  CONSTRAINT pk PRIMARY KEY (id),
+  CONSTRAINT uq_symbol UNIQUE (symbol),
   INDEX ix_created_at (created_at) USING HASH
 );

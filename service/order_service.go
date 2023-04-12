@@ -29,6 +29,10 @@ type (
 			context.Context,
 			om.Orderer,
 		) (uuid.UUID, error)
+		// DeleteAll is a function.
+		DeleteAll(
+			context.Context,
+		) (time.Time, error)
 		// Get is a function.
 		Get(
 			context.Context,
@@ -231,6 +235,52 @@ func (service *orderService) Create(
 	return orderID, nil
 }
 
+// DeleteAll is a function.
+func (service *orderService) DeleteAll(
+	ctx context.Context,
+) (time.Time, error) {
+	var traceSpan trace.Span
+
+	ctx, traceSpan = service.GetTracer().Start(
+		ctx,
+		"DeleteAll",
+		trace.WithSpanKind(trace.SpanKindProducer),
+	)
+	defer traceSpan.End()
+
+	utilRuntimeContext := util.NewRuntimeContext(ctx, service.GetUUIDer())
+	utilSpanContext := util.NewSpanContext(traceSpan)
+	fields := map[string]any{
+		"name":   "DeleteAll",
+		"rt_ctx": utilRuntimeContext,
+		"sp_ctx": utilSpanContext,
+		"config": service.configConfigger,
+	}
+
+	service.GetRuntimeLogger().
+		WithFields(fields).
+		Info(object.URIEmpty)
+
+	deletedAt, err := service.GetOrderRepositorier().DeleteAll(ctx)
+	if err != nil {
+		service.GetRuntimeLogger().
+			WithFields(fields).
+			WithField(object.URIFieldError, err).
+			Error(object.ErrOrderRepositoryDeleteAll.Error())
+		traceSpan.RecordError(err)
+		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryDeleteAll.Error())
+
+		return time.Time{}, err
+	}
+
+	service.GetRuntimeLogger().
+		WithFields(fields).
+		WithField(object.URIFieldDeletedAt, deletedAt).
+		Debug(object.URIEmpty)
+
+	return deletedAt, nil
+}
+
 // Get is a function.
 func (service *orderService) Get(
 	ctx context.Context,
@@ -364,7 +414,7 @@ func (service *orderService) GetListFromRepository(
 	service.GetRuntimeLogger().
 		WithFields(fields).
 		WithField(object.URIFieldDAOOrders, daoOrders).
-		WithField(object.URIFieldDAOCursorer, daoCursorer).
+		WithField(object.URIFieldDAOCursor, daoCursorer).
 		Debug(object.URIEmpty)
 
 	omOrders := make([]om.Orderer, 0, len(daoOrders))
@@ -515,9 +565,9 @@ func (service *orderService) GetListFromRemote(
 		service.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderKucoinServiceReadPaginationData.Error())
+			Error(object.ErrKucoinServiceReadPaginationData.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderKucoinServiceReadPaginationData.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrKucoinServiceReadPaginationData.Error())
 
 		return fmt.Errorf("%w", err)
 	}

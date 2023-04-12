@@ -5,10 +5,19 @@ issues:
       path: object/dao/order\.go
     - linters:
         - cyclop
+      path: object/dao/ticker\.go
+    - linters:
+        - cyclop
       path: object/om/order\.go
     - linters:
         - cyclop
+      path: object/om/ticker\.go
+    - linters:
+        - cyclop
       path: repository/order_repository\.go
+    - linters:
+        - cyclop
+      path: repository/ticker_repository\.go
     - linters:
         - cyclop
       path: service/order_service\.go
@@ -17,10 +26,19 @@ issues:
       path: object/dao/order\.go
     - linters:
         - gocognit
+      path: object/dao/ticker\.go
+    - linters:
+        - gocognit
       path: object/om/order\.go
     - linters:
         - gocognit
+      path: object/om/ticker\.go
+    - linters:
+        - gocognit
       path: repository/order_repository\.go
+    - linters:
+        - gocognit
+      path: repository/ticker_repository\.go
     - linters:
         - gocritic
       path: service/order_service\.go
@@ -32,7 +50,13 @@ issues:
       path: object/om/order\.go
     - linters:
         - gocyclo
+      path: object/om/ticker\.go
+    - linters:
+        - gocyclo
       path: repository/order_repository\.go
+    - linters:
+        - gocyclo
+      path: repository/ticker_repository\.go
     - linters:
         - interfacebloat
       path: config/config\.go
@@ -44,7 +68,13 @@ issues:
       path: object/dao/order\.go
     - linters:
         - interfacebloat
+      path: object/dao/ticker\.go
+    - linters:
+        - interfacebloat
       path: object/om/order\.go
+    - linters:
+        - interfacebloat
+      path: object/om/ticker\.go
     - linters:
         - interfacebloat
       path: server/server\.go

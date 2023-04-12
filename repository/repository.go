@@ -45,6 +45,10 @@ type (
 			context.Context,
 			uuid.UUID,
 		) (time.Time, error)
+		// DeleteAll is a function.
+		DeleteAll(
+			context.Context,
+		) (time.Time, error)
 	}
 
 	// DAOJoinRepositorier is an interface.
@@ -90,6 +94,7 @@ type (
 	// Repositorier is an interface.
 	Repositorier interface {
 		GetOrderRepositorier
+		GetTickerRepositorier
 	}
 
 	// GetRepositorier is an interface.
@@ -99,7 +104,8 @@ type (
 	}
 
 	repository struct {
-		orderRepositorier OrderRepositorier
+		orderRepositorier  OrderRepositorier
+		tickerRepositorier TickerRepositorier
 	}
 
 	optionRepositorier interface {
@@ -110,8 +116,9 @@ type (
 )
 
 var (
-	_ GetOrderRepositorier = (*repository)(nil)
-	_ Repositorier         = (*repository)(nil)
+	_ GetOrderRepositorier  = (*repository)(nil)
+	_ GetTickerRepositorier = (*repository)(nil)
+	_ Repositorier          = (*repository)(nil)
 )
 
 // NewRepository is a function.
@@ -119,7 +126,8 @@ func NewRepository(
 	optioners ...optionRepositorier,
 ) *repository {
 	repository := &repository{
-		orderRepositorier: nil,
+		orderRepositorier:  nil,
+		tickerRepositorier: nil,
 	}
 
 	return repository.WithOptioners(optioners...)
@@ -146,9 +154,35 @@ func WithOrderRepositorier(
 	})
 }
 
+// WithTickerRepositorier is a function.
+func WithTickerRepositorier(
+	configConfigger config.Configger,
+	logRuntimeLogger log.RuntimeLogger,
+	traceTracer trace.Tracer,
+	utilUUIDer util.UUIDer,
+	optioners ...tickerRepositoryOptioner,
+) optionRepositorier {
+	return optionRepositorierFunc(func(
+		repository *repository,
+	) {
+		repository.tickerRepositorier = NewTickerRepository(
+			configConfigger,
+			logRuntimeLogger,
+			traceTracer,
+			utilUUIDer,
+			optioners...,
+		)
+	})
+}
+
 // GetOrderRepositorier is a function.
 func (repository *repository) GetOrderRepositorier() OrderRepositorier {
 	return repository.orderRepositorier
+}
+
+// GetTickerRepositorier is a function.
+func (repository *repository) GetTickerRepositorier() TickerRepositorier {
+	return repository.tickerRepositorier
 }
 
 // WithOptioners is a function.

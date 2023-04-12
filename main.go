@@ -8,6 +8,7 @@ import (
 	"github.com/ShahoBashoki/kucoin/config"
 	"github.com/ShahoBashoki/kucoin/log"
 	"github.com/ShahoBashoki/kucoin/object"
+	"github.com/ShahoBashoki/kucoin/object/dao"
 	"github.com/ShahoBashoki/kucoin/object/dto"
 	"github.com/ShahoBashoki/kucoin/repository"
 	"github.com/ShahoBashoki/kucoin/server"
@@ -196,6 +197,14 @@ func main() {
 			repository.WithOrderRepositoryDB(gormDB),
 			repository.WithOrderRepositoryTimer(objectTime),
 		),
+		repository.WithTickerRepositorier(
+			configConfig,
+			logRuntimeLog,
+			traceTracer,
+			utilUUID,
+			repository.WithTickerRepositoryDB(gormDB),
+			repository.WithTickerRepositoryTimer(objectTime),
+		),
 	)
 
 	kucoinAPIService := kucoin.NewApiService(
@@ -221,6 +230,21 @@ func main() {
 		utilUUID,
 	)
 
+	deletedAt, err := servicer.GetOrderServicer().DeleteAll(ctx)
+	if err != nil {
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldError, err).
+			Error(object.ErrOrderServiceDeleteAll.Error())
+		traceSpan.RecordError(err)
+		traceSpan.SetStatus(codes.Error, object.ErrOrderServiceDeleteAll.Error())
+	}
+
+	logRuntimeLog.
+		WithFields(fields).
+		WithField(object.URIFieldDeletedAt, deletedAt).
+		Debug(object.URIEmpty)
+
 	dtoOrderRequest := dto.NewOrderRequest(
 		object.URIEmpty,
 		object.URIEmpty,
@@ -244,10 +268,77 @@ func main() {
 		logRuntimeLog.
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderKucoinServiceGetList.Error())
+			Error(object.ErrOrderServiceGetListFromRemote.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderKucoinServiceGetList.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrOrderServiceGetListFromRemote.Error())
 	}
+
+	deletedAt, err = servicer.GetTickerServicer().DeleteAll(ctx)
+	if err != nil {
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldError, err).
+			Error(object.ErrTickerServiceDeleteAll.Error())
+		traceSpan.RecordError(err)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerServiceDeleteAll.Error())
+	}
+
+	logRuntimeLog.
+		WithFields(fields).
+		WithField(object.URIFieldDeletedAt, deletedAt).
+		Debug(object.URIEmpty)
+
+	if err = servicer.GetTickerServicer().GetListFromRemote(
+		ctx,
+	); err != nil {
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldError, err).
+			Error(object.ErrTickerKucoinServiceGetList.Error())
+		traceSpan.RecordError(err)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerKucoinServiceGetList.Error())
+	}
+
+	daoCursor := dao.NewCursor(0)
+
+	logRuntimeLog.
+		WithFields(fields).
+		WithField(object.URIFieldDAOCursor, daoCursor).
+		Debug(object.URIEmpty)
+
+	daoPagination := dao.NewPagination(daoCursor, object.NUMTopTickerChangeRateCount)
+
+	logRuntimeLog.
+		WithFields(fields).
+		WithField(object.URIFieldDAOPagination, daoPagination).
+		Debug(object.URIEmpty)
+
+	daoTickerFilter := dao.NewTickerFilter(
+		object.URIEmpty,
+		true,
+	)
+
+	logRuntimeLog.
+		WithFields(fields).
+		WithField(object.URIFieldDAOTickerFilter, daoTickerFilter).
+		Debug(object.URIEmpty)
+
+	omTickers, daoCursorer, err := servicer.GetTickerServicer().
+		GetListFromRepository(ctx, daoPagination, daoTickerFilter)
+	if err != nil {
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldError, err).
+			Error(object.ErrTickerServiceGetListFromRepository.Error())
+		traceSpan.RecordError(err)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerServiceGetListFromRepository.Error())
+	}
+
+	logRuntimeLog.
+		WithFields(fields).
+		WithField(object.URIFieldOMTickers, omTickers).
+		WithField(object.URIFieldDAOCursorer, daoCursorer).
+		Debug(object.URIEmpty)
 
 	if err = serverer.Run(ctx); err != nil {
 		logRuntimeLog.

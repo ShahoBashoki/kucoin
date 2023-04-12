@@ -18,18 +18,18 @@ import (
 )
 
 type (
-	// OrderRepositorier is a interface.
-	OrderRepositorier interface {
-		DAORepositorier[dao.Orderer, dao.OrderFilterer]
+	// TickerRepositorier is a interface.
+	TickerRepositorier interface {
+		DAORepositorier[dao.Tickerer, dao.TickerFilterer]
 	}
 
-	// GetOrderRepositorier is an interface.
-	GetOrderRepositorier interface {
-		// GetOrderRepositorier is a function.
-		GetOrderRepositorier() OrderRepositorier
+	// GetTickerRepositorier is an interface.
+	GetTickerRepositorier interface {
+		// GetTickerRepositorier is a function.
+		GetTickerRepositorier() TickerRepositorier
 	}
 
-	orderRepository struct {
+	tickerRepository struct {
 		configConfigger  config.Configger
 		gormDB           *gorm.DB
 		logRuntimeLogger log.RuntimeLogger
@@ -38,32 +38,32 @@ type (
 		utilUUIDer       util.UUIDer
 	}
 
-	orderRepositoryOptioner interface {
-		apply(*orderRepository)
+	tickerRepositoryOptioner interface {
+		apply(*tickerRepository)
 	}
 
-	orderRepositoryOptionerFunc func(*orderRepository)
+	tickerRepositoryOptionerFunc func(*tickerRepository)
 )
 
 var (
-	_ OrderRepositorier    = (*orderRepository)(nil)
-	_ GetDB                = (*orderRepository)(nil)
-	_ config.GetConfigger  = (*orderRepository)(nil)
-	_ log.GetRuntimeLogger = (*orderRepository)(nil)
-	_ object.GetTimer      = (*orderRepository)(nil)
-	_ util.GetTracer       = (*orderRepository)(nil)
-	_ util.GetUUIDer       = (*orderRepository)(nil)
+	_ TickerRepositorier   = (*tickerRepository)(nil)
+	_ GetDB                = (*tickerRepository)(nil)
+	_ config.GetConfigger  = (*tickerRepository)(nil)
+	_ log.GetRuntimeLogger = (*tickerRepository)(nil)
+	_ object.GetTimer      = (*tickerRepository)(nil)
+	_ util.GetTracer       = (*tickerRepository)(nil)
+	_ util.GetUUIDer       = (*tickerRepository)(nil)
 )
 
-// NewOrderRepository is a function.
-func NewOrderRepository(
+// NewTickerRepository is a function.
+func NewTickerRepository(
 	configConfigger config.Configger,
 	logRuntimeLogger log.RuntimeLogger,
 	traceTracer trace.Tracer,
 	utilUUIDer util.UUIDer,
-	optioners ...orderRepositoryOptioner,
-) *orderRepository {
-	orderRepository := &orderRepository{
+	optioners ...tickerRepositoryOptioner,
+) *tickerRepository {
+	tickerRepository := &tickerRepository{
 		configConfigger:  configConfigger,
 		gormDB:           nil,
 		logRuntimeLogger: logRuntimeLogger,
@@ -72,29 +72,29 @@ func NewOrderRepository(
 		utilUUIDer:       utilUUIDer,
 	}
 
-	return orderRepository.WithOptioners(optioners...)
+	return tickerRepository.WithOptioners(optioners...)
 }
 
-// WithOrderRepositoryTimer is a function.
-func WithOrderRepositoryTimer(
+// WithTickerRepositoryTimer is a function.
+func WithTickerRepositoryTimer(
 	objectTimer object.Timer,
-) orderRepositoryOptioner {
-	return orderRepositoryOptionerFunc(func(
-		config *orderRepository,
+) tickerRepositoryOptioner {
+	return tickerRepositoryOptionerFunc(func(
+		config *tickerRepository,
 	) {
 		config.objectTimer = objectTimer
 	})
 }
 
-// WithOrderRepositoryDB is a function.
-func WithOrderRepositoryDB(
+// WithTickerRepositoryDB is a function.
+func WithTickerRepositoryDB(
 	gormDB *gorm.DB,
-) orderRepositoryOptioner {
-	return orderRepositoryOptionerFunc(func(
-		config *orderRepository,
+) tickerRepositoryOptioner {
+	return tickerRepositoryOptionerFunc(func(
+		config *tickerRepository,
 	) {
 		config.gormDB = gormDB.
-			Table(object.URITableKucoinOrder).
+			Table(object.URITableTicker).
 			Session(&gorm.Session{
 				DryRun:                   false,
 				PrepareStmt:              true,
@@ -115,39 +115,39 @@ func WithOrderRepositoryDB(
 }
 
 // GetDB is a function.
-func (repository *orderRepository) GetDB() *gorm.DB {
+func (repository *tickerRepository) GetDB() *gorm.DB {
 	return repository.gormDB
 }
 
 // GetConfigger is a function.
-func (repository *orderRepository) GetConfigger() config.Configger {
+func (repository *tickerRepository) GetConfigger() config.Configger {
 	return repository.configConfigger
 }
 
 // GetRuntimeLogger is a function.
-func (repository *orderRepository) GetRuntimeLogger() log.RuntimeLogger {
+func (repository *tickerRepository) GetRuntimeLogger() log.RuntimeLogger {
 	return repository.logRuntimeLogger
 }
 
 // GetTimer is a function.
-func (repository *orderRepository) GetTimer() object.Timer {
+func (repository *tickerRepository) GetTimer() object.Timer {
 	return repository.objectTimer
 }
 
 // GetTracer is a function.
-func (repository *orderRepository) GetTracer() trace.Tracer {
+func (repository *tickerRepository) GetTracer() trace.Tracer {
 	return repository.traceTracer
 }
 
 // GetUUIDer is a function.
-func (repository *orderRepository) GetUUIDer() util.UUIDer {
+func (repository *tickerRepository) GetUUIDer() util.UUIDer {
 	return repository.utilUUIDer
 }
 
 // Create is a function.
-func (repository *orderRepository) Create(
+func (repository *tickerRepository) Create(
 	ctx context.Context,
-	daoOrderer dao.Orderer,
+	daoTickerer dao.Tickerer,
 ) (uuid.UUID, error) {
 	var traceSpan trace.Span
 
@@ -161,11 +161,11 @@ func (repository *orderRepository) Create(
 	utilRuntimeContext := util.NewRuntimeContext(ctx, repository.GetUUIDer())
 	utilSpanContext := util.NewSpanContext(traceSpan)
 	fields := map[string]any{
-		"name":        "Create",
-		"rt_ctx":      utilRuntimeContext,
-		"sp_ctx":      utilSpanContext,
-		"config":      repository.GetConfigger(),
-		"dao_orderer": daoOrderer,
+		"name":         "Create",
+		"rt_ctx":       utilRuntimeContext,
+		"sp_ctx":       utilSpanContext,
+		"config":       repository.GetConfigger(),
+		"dao_tickerer": daoTickerer,
 	}
 
 	repository.GetRuntimeLogger().
@@ -196,7 +196,7 @@ func (repository *orderRepository) Create(
 		WithField(object.URIFieldNowUTC, nowUTC).
 		Debug(object.URIEmpty)
 
-	daoOrder := dao.NewOrder(
+	daoTicker := dao.NewTicker(
 		nowUTC,
 		nowUTC,
 		sql.NullTime{
@@ -204,62 +204,48 @@ func (repository *orderRepository) Create(
 			Valid: false,
 		},
 		id,
-		daoOrderer.GetChannel(),
-		daoOrderer.GetClientOID(),
-		daoOrderer.GetDealFunds(),
-		daoOrderer.GetDealSize(),
-		daoOrderer.GetFee(),
-		daoOrderer.GetFeeCurrency(),
-		daoOrderer.GetFunds(),
-		daoOrderer.GetKucoinID(),
-		daoOrderer.GetKucoinType(),
-		daoOrderer.GetOPType(),
-		daoOrderer.GetPrice(),
-		daoOrderer.GetRemark(),
-		daoOrderer.GetSide(),
-		daoOrderer.GetSize(),
-		daoOrderer.GetStop(),
-		daoOrderer.GetStopPrice(),
-		daoOrderer.GetSTP(),
-		daoOrderer.GetSymbol(),
-		daoOrderer.GetTags(),
-		daoOrderer.GetTimeInForce(),
-		daoOrderer.GetTradeType(),
-		daoOrderer.GetVisibleSize(),
-		daoOrderer.GetCancelAfter(),
-		daoOrderer.GetKucoinCreatedAt(),
-		daoOrderer.GetCancelExist(),
-		daoOrderer.GetHidden(),
-		daoOrderer.GetIceBerg(),
-		daoOrderer.GetIsActive(),
-		daoOrderer.GetPostOnly(),
-		daoOrderer.GetStopTriggered(),
+		daoTickerer.GetAveragePrice(),
+		daoTickerer.GetBuy(),
+		daoTickerer.GetChangePrice(),
+		daoTickerer.GetChangeRate(),
+		daoTickerer.GetHigh(),
+		daoTickerer.GetLast(),
+		daoTickerer.GetLow(),
+		daoTickerer.GetMakerCoefficient(),
+		daoTickerer.GetMakerFeeRate(),
+		daoTickerer.GetSell(),
+		daoTickerer.GetSymbol(),
+		daoTickerer.GetSymbolName(),
+		daoTickerer.GetTakerCoefficient(),
+		daoTickerer.GetTakerFeeRate(),
+		daoTickerer.GetVol(),
+		daoTickerer.GetVolValue(),
 	)
 
 	repository.GetRuntimeLogger().
 		WithFields(fields).
-		WithField(object.URIFieldDAOOrder, daoOrder).
+		WithField(object.URIFieldDAOTicker, daoTicker).
 		Debug(object.URIEmpty)
 
 	gormDB := repository.GetDB().
 		WithContext(ctx).
-		Create(daoOrder.GetMap())
+		Create(daoTicker.GetMap())
 	if err = gormDB.Error; err != nil {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderRepositoryCreate.Error())
+			Error(object.ErrTickerRepositoryCreate.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryCreate.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryCreate.Error())
 
 		return uuid.Nil, err
 	}
 
-	return daoOrder.GetID(), nil
+	return daoTicker.GetID(), nil
 }
 
 // Delete is a function.
-func (repository *orderRepository) Delete(
+func (repository *tickerRepository) Delete(
 	ctx context.Context,
 	id uuid.UUID,
 ) (time.Time, error) {
@@ -308,9 +294,9 @@ func (repository *orderRepository) Delete(
 		repository.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderRepositoryDelete.Error())
+			Error(object.ErrTickerRepositoryDelete.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryDelete.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryDelete.Error())
 
 		return time.Time{}, err
 	}
@@ -318,19 +304,19 @@ func (repository *orderRepository) Delete(
 	if gormDB.RowsAffected == 0 {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrOrderRepositoryDelete).
-			Error(object.ErrOrderRepositoryDelete.Error())
-		traceSpan.RecordError(object.ErrOrderRepositoryDelete)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryDelete.Error())
+			WithField(object.URIFieldError, object.ErrTickerRepositoryDelete).
+			Error(object.ErrTickerRepositoryDelete.Error())
+		traceSpan.RecordError(object.ErrTickerRepositoryDelete)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryDelete.Error())
 
-		return time.Time{}, object.ErrOrderRepositoryDelete
+		return time.Time{}, object.ErrTickerRepositoryDelete
 	}
 
 	return nowUTC, nil
 }
 
 // DeleteAll is a function.
-func (repository *orderRepository) DeleteAll(
+func (repository *tickerRepository) DeleteAll(
 	ctx context.Context,
 ) (time.Time, error) {
 	var traceSpan trace.Span
@@ -364,14 +350,14 @@ func (repository *orderRepository) DeleteAll(
 
 	gormDB := repository.GetDB().
 		WithContext(ctx).
-		Exec(fmt.Sprintf("DELETE FROM %s", object.URITableKucoinOrder))
+		Exec(fmt.Sprintf("DELETE FROM %s", object.URITableTicker))
 	if err := gormDB.Error; err != nil {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderRepositoryDelete.Error())
+			Error(object.ErrTickerRepositoryDelete.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryDelete.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryDelete.Error())
 
 		return time.Time{}, err
 	}
@@ -379,22 +365,22 @@ func (repository *orderRepository) DeleteAll(
 	if gormDB.RowsAffected == 0 {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrOrderRepositoryDelete).
-			Error(object.ErrOrderRepositoryDelete.Error())
-		traceSpan.RecordError(object.ErrOrderRepositoryDelete)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryDelete.Error())
+			WithField(object.URIFieldError, object.ErrTickerRepositoryDelete).
+			Error(object.ErrTickerRepositoryDelete.Error())
+		traceSpan.RecordError(object.ErrTickerRepositoryDelete)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryDelete.Error())
 
-		return time.Time{}, object.ErrOrderRepositoryDelete
+		return time.Time{}, object.ErrTickerRepositoryDelete
 	}
 
 	return nowUTC, nil
 }
 
 // Read is a function.
-func (repository *orderRepository) Read(
+func (repository *tickerRepository) Read(
 	ctx context.Context,
 	id uuid.UUID,
-) (dao.Orderer, error) {
+) (dao.Tickerer, error) {
 	var traceSpan trace.Span
 
 	ctx, traceSpan = repository.GetTracer().Start(
@@ -426,15 +412,15 @@ func (repository *orderRepository) Read(
 			"id":         id,
 			"deleted_at": nil,
 		}).
-		Select(fmt.Sprintf("%s.*", object.URITableKucoinOrder)).
+		Select(fmt.Sprintf("%s.*", object.URITableTicker)).
 		Find(result)
 	if err := gormDB.Error; err != nil {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderRepositoryRead.Error())
+			Error(object.ErrTickerRepositoryRead.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryRead.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryRead.Error())
 
 		return nil, err
 	}
@@ -442,12 +428,12 @@ func (repository *orderRepository) Read(
 	if gormDB.RowsAffected == 0 {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrOrderRepositoryRead).
-			Error(object.ErrOrderRepositoryRead.Error())
-		traceSpan.RecordError(object.ErrOrderRepositoryRead)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryRead.Error())
+			WithField(object.URIFieldError, object.ErrTickerRepositoryRead).
+			Error(object.ErrTickerRepositoryRead.Error())
+		traceSpan.RecordError(object.ErrTickerRepositoryRead)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryRead.Error())
 
-		return nil, object.ErrOrderRepositoryRead
+		return nil, object.ErrTickerRepositoryRead
 	}
 
 	repository.GetRuntimeLogger().
@@ -479,7 +465,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	channel, ok := result["channel"].(string)
+	averagePrice, ok := result["average_price"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -491,7 +477,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	clientOID, ok := result["client_oid"].(string)
+	buy, ok := result["buy"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -503,7 +489,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	dealFunds, ok := result["deal_funds"].(string)
+	changePrice, ok := result["change_price"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -515,7 +501,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	dealSize, ok := result["deal_size"].(string)
+	changeRate, ok := result["change_rate"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -527,7 +513,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	fee, ok := result["fee"].(string)
+	high, ok := result["high"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -539,7 +525,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	feeCurrency, ok := result["fee_currency"].(string)
+	last, ok := result["last"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -551,7 +537,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	funds, ok := result["funds"].(string)
+	low, ok := result["low"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -563,7 +549,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	kucoinID, ok := result["kucoin_id"].(string)
+	makerCoefficient, ok := result["maker_coefficient"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -575,7 +561,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	kucoinType, ok := result["kucoin_type"].(string)
+	makerFeeRate, ok := result["maker_fee_rate"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -587,91 +573,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	opType, ok := result["op_type"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	price, ok := result["price"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	remark, ok := result["remark"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	side, ok := result["side"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	size, ok := result["size"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	stop, ok := result["stop"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	stopPrice, ok := result["stop_price"].(string)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	stp, ok := result["stp"].(string)
+	sell, ok := result["sell"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -695,7 +597,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	tags, ok := result["tags"].(string)
+	symbolName, ok := result["symbol_name"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -707,7 +609,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	timeInForce, ok := result["time_in_force"].(string)
+	takerCoefficient, ok := result["taker_coefficient"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -719,7 +621,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	tradeType, ok := result["trade_type"].(string)
+	takerFeeRate, ok := result["taker_fee_rate"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -731,7 +633,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	visibleSize, ok := result["visible_size"].(string)
+	vol, ok := result["vol"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -743,7 +645,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	cancelAfter, ok := result["cancel_after"].(int64)
+	volValue, ok := result["vol_value"].(string)
 	if !ok {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
@@ -755,91 +657,7 @@ func (repository *orderRepository) Read(
 		return nil, object.ErrTypeAssertion
 	}
 
-	kucoinCreatedAt, ok := result["kucoin_created_at"].(int64)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	cancelExist, ok := result["cancel_exist"].(bool)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	hidden, ok := result["hidden"].(bool)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	iceBerg, ok := result["ice_berg"].(bool)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	isActive, ok := result["is_active"].(bool)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	postOnly, ok := result["post_only"].(bool)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	stopTriggered, ok := result["stop_triggered"].(bool)
-	if !ok {
-		repository.GetRuntimeLogger().
-			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrTypeAssertion).
-			Error(object.ErrTypeAssertion.Error())
-		traceSpan.RecordError(object.ErrTypeAssertion)
-		traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-		return nil, object.ErrTypeAssertion
-	}
-
-	daoOrder := dao.NewOrder(
+	daoTicker := dao.NewTicker(
 		createdAT,
 		updatedAT,
 		sql.NullTime{
@@ -847,52 +665,38 @@ func (repository *orderRepository) Read(
 			Valid: false,
 		},
 		id,
-		channel,
-		clientOID,
-		dealFunds,
-		dealSize,
-		fee,
-		feeCurrency,
-		funds,
-		kucoinID,
-		kucoinType,
-		opType,
-		price,
-		remark,
-		side,
-		size,
-		stop,
-		stopPrice,
-		stp,
+		averagePrice,
+		buy,
+		changePrice,
+		changeRate,
+		high,
+		last,
+		low,
+		makerCoefficient,
+		makerFeeRate,
+		sell,
 		symbol,
-		tags,
-		timeInForce,
-		tradeType,
-		visibleSize,
-		uint32(cancelAfter),
-		uint32(kucoinCreatedAt),
-		cancelExist,
-		hidden,
-		iceBerg,
-		isActive,
-		postOnly,
-		stopTriggered,
+		symbolName,
+		takerCoefficient,
+		takerFeeRate,
+		vol,
+		volValue,
 	)
 
 	repository.GetRuntimeLogger().
 		WithFields(fields).
-		WithField(object.URIFieldDAOOrder, daoOrder).
+		WithField(object.URIFieldDAOTicker, daoTicker).
 		Debug(object.URIEmpty)
 
-	return daoOrder, nil
+	return daoTicker, nil
 }
 
 // ReadList is a function.
-func (repository *orderRepository) ReadList(
+func (repository *tickerRepository) ReadList(
 	ctx context.Context,
 	daoPaginationer dao.Paginationer,
-	daoOrderFilterer dao.OrderFilterer,
-) ([]dao.Orderer, dao.Cursorer, error) {
+	daoTickerFilterer dao.TickerFilterer,
+) ([]dao.Tickerer, dao.Cursorer, error) {
 	var traceSpan trace.Span
 
 	ctx, traceSpan = repository.GetTracer().Start(
@@ -905,12 +709,12 @@ func (repository *orderRepository) ReadList(
 	utilRuntimeContext := util.NewRuntimeContext(ctx, repository.GetUUIDer())
 	utilSpanContext := util.NewSpanContext(traceSpan)
 	fields := map[string]any{
-		"name":               "ReadList",
-		"rt_ctx":             utilRuntimeContext,
-		"sp_ctx":             utilSpanContext,
-		"config":             repository.GetConfigger(),
-		"dao_paginationer":   daoPaginationer,
-		"dao_order_filterer": daoOrderFilterer,
+		"name":                "ReadList",
+		"rt_ctx":              utilRuntimeContext,
+		"sp_ctx":              utilSpanContext,
+		"config":              repository.GetConfigger(),
+		"dao_paginationer":    daoPaginationer,
+		"dao_ticker_filterer": daoTickerFilterer,
 	}
 
 	repository.GetRuntimeLogger().
@@ -922,21 +726,21 @@ func (repository *orderRepository) ReadList(
 	gormDB := repository.GetDB().
 		WithContext(ctx).
 		Scopes(
-			daoOrderFilterer.Filter,
-			daoPaginationer.Pagination(object.URITableKucoinOrder),
+			daoTickerFilterer.Filter,
+			daoPaginationer.Pagination(object.URITableTicker),
 		).
 		Where(map[string]any{
 			"deleted_at": nil,
 		}).
-		Select(fmt.Sprintf("%s.*", object.URITableKucoinOrder)).
+		Select(fmt.Sprintf("%s.*", object.URITableTicker)).
 		Find(&result)
 	if err := gormDB.Error; err != nil {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderRepositoryReadList.Error())
+			Error(object.ErrTickerRepositoryReadList.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryReadList.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryReadList.Error())
 
 		return nil, nil, err
 	}
@@ -946,7 +750,7 @@ func (repository *orderRepository) ReadList(
 		WithField(object.URIFieldResult, result).
 		Debug(object.URIEmpty)
 
-	daoOrderers := make([]dao.Orderer, 0, daoPaginationer.GetLimit())
+	daoTickerers := make([]dao.Tickerer, 0, daoPaginationer.GetLimit())
 
 	for key, value := range result {
 		repository.GetRuntimeLogger().
@@ -1004,7 +808,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		channel, ok := value["channel"].(string)
+		averagePrice, ok := value["average_price"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1016,7 +820,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		clientOID, ok := value["client_oid"].(string)
+		buy, ok := value["buy"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1028,7 +832,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		dealFunds, ok := value["deal_funds"].(string)
+		changePrice, ok := value["change_price"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1040,7 +844,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		dealSize, ok := value["deal_size"].(string)
+		changeRate, ok := value["change_rate"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1052,7 +856,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		fee, ok := value["fee"].(string)
+		high, ok := value["high"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1064,7 +868,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		feeCurrency, ok := value["fee_currency"].(string)
+		last, ok := value["last"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1076,7 +880,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		funds, ok := value["funds"].(string)
+		low, ok := value["low"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1088,7 +892,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		kucoinID, ok := value["kucoin_id"].(string)
+		makerCoefficient, ok := value["maker_coefficient"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1100,7 +904,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		kucoinType, ok := value["kucoin_type"].(string)
+		makerFeeRate, ok := value["maker_fee_rate"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1112,91 +916,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		opType, ok := value["op_type"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		price, ok := value["price"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		remark, ok := value["remark"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		side, ok := value["side"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		size, ok := value["size"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		stop, ok := value["stop"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		stopPrice, ok := value["stop_price"].(string)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		stp, ok := value["stp"].(string)
+		sell, ok := value["sell"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1220,7 +940,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		tags, ok := value["tags"].(string)
+		symbolName, ok := value["symbol_name"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1232,7 +952,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		timeInForce, ok := value["time_in_force"].(string)
+		takerCoefficient, ok := value["taker_coefficient"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1244,7 +964,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		tradeType, ok := value["trade_type"].(string)
+		takerFeeRate, ok := value["taker_fee_rate"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1256,7 +976,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		visibleSize, ok := value["visible_size"].(string)
+		vol, ok := value["vol"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1268,7 +988,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		cancelAfter, ok := value["cancel_after"].(int64)
+		volValue, ok := value["vol_value"].(string)
 		if !ok {
 			repository.GetRuntimeLogger().
 				WithFields(fields).
@@ -1280,91 +1000,7 @@ func (repository *orderRepository) ReadList(
 			return nil, nil, object.ErrTypeAssertion
 		}
 
-		kucoinCreatedAt, ok := value["kucoin_created_at"].(int64)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		cancelExist, ok := value["cancel_exist"].(bool)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		hidden, ok := value["hidden"].(bool)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		iceBerg, ok := value["ice_berg"].(bool)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		isActive, ok := value["is_active"].(bool)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		postOnly, ok := value["post_only"].(bool)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		stopTriggered, ok := value["stop_triggered"].(bool)
-		if !ok {
-			repository.GetRuntimeLogger().
-				WithFields(fields).
-				WithField(object.URIFieldError, object.ErrTypeAssertion).
-				Error(object.ErrTypeAssertion.Error())
-			traceSpan.RecordError(object.ErrTypeAssertion)
-			traceSpan.SetStatus(codes.Error, object.ErrTypeAssertion.Error())
-
-			return nil, nil, object.ErrTypeAssertion
-		}
-
-		daoOrderers = append(daoOrderers, dao.NewOrder(
+		daoTickerers = append(daoTickerers, dao.NewTicker(
 			createdAT,
 			updatedAT,
 			sql.NullTime{
@@ -1372,42 +1008,28 @@ func (repository *orderRepository) ReadList(
 				Valid: false,
 			},
 			id,
-			channel,
-			clientOID,
-			dealFunds,
-			dealSize,
-			fee,
-			feeCurrency,
-			funds,
-			kucoinID,
-			kucoinType,
-			opType,
-			price,
-			remark,
-			side,
-			size,
-			stop,
-			stopPrice,
-			stp,
+			averagePrice,
+			buy,
+			changePrice,
+			changeRate,
+			high,
+			last,
+			low,
+			makerCoefficient,
+			makerFeeRate,
+			sell,
 			symbol,
-			tags,
-			timeInForce,
-			tradeType,
-			visibleSize,
-			uint32(cancelAfter),
-			uint32(kucoinCreatedAt),
-			cancelExist,
-			hidden,
-			iceBerg,
-			isActive,
-			postOnly,
-			stopTriggered,
+			symbolName,
+			takerCoefficient,
+			takerFeeRate,
+			vol,
+			volValue,
 		))
 	}
 
 	repository.GetRuntimeLogger().
 		WithFields(fields).
-		WithField(object.URIFieldDAOOrderers, daoOrderers).
+		WithField(object.URIFieldDAOTickerers, daoTickerers).
 		Debug(object.URIEmpty)
 
 	var daoCursorer dao.Cursorer
@@ -1427,13 +1049,13 @@ func (repository *orderRepository) ReadList(
 		WithField(object.URIFieldDAOCursor, daoCursorer).
 		Debug(object.URIEmpty)
 
-	return daoOrderers, daoCursorer, nil
+	return daoTickerers, daoCursorer, nil
 }
 
 // Update is a function.
-func (repository *orderRepository) Update(
+func (repository *tickerRepository) Update(
 	ctx context.Context,
-	daoOrderer dao.Orderer,
+	daoTickerer dao.Tickerer,
 ) (time.Time, error) {
 	var traceSpan trace.Span
 
@@ -1447,11 +1069,11 @@ func (repository *orderRepository) Update(
 	utilRuntimeContext := util.NewRuntimeContext(ctx, repository.GetUUIDer())
 	utilSpanContext := util.NewSpanContext(traceSpan)
 	fields := map[string]any{
-		"name":        "Update",
-		"rt_ctx":      utilRuntimeContext,
-		"sp_ctx":      utilSpanContext,
-		"config":      repository.GetConfigger(),
-		"dao_orderer": daoOrderer,
+		"name":         "Update",
+		"rt_ctx":       utilRuntimeContext,
+		"sp_ctx":       utilSpanContext,
+		"config":       repository.GetConfigger(),
+		"dao_tickerer": daoTickerer,
 	}
 
 	repository.GetRuntimeLogger().
@@ -1465,64 +1087,50 @@ func (repository *orderRepository) Update(
 		WithField(object.URIFieldNowUTC, nowUTC).
 		Debug(object.URIEmpty)
 
-	daoOrder := dao.NewOrder(
-		daoOrderer.GetCreatedAt(),
+	daoTicker := dao.NewTicker(
+		daoTickerer.GetCreatedAt(),
 		nowUTC,
 		sql.NullTime{
 			Time:  time.Time{},
 			Valid: false,
 		},
-		daoOrderer.GetID(),
-		daoOrderer.GetChannel(),
-		daoOrderer.GetClientOID(),
-		daoOrderer.GetDealFunds(),
-		daoOrderer.GetDealSize(),
-		daoOrderer.GetFee(),
-		daoOrderer.GetFeeCurrency(),
-		daoOrderer.GetFunds(),
-		daoOrderer.GetKucoinID(),
-		daoOrderer.GetKucoinType(),
-		daoOrderer.GetOPType(),
-		daoOrderer.GetPrice(),
-		daoOrderer.GetRemark(),
-		daoOrderer.GetSide(),
-		daoOrderer.GetSize(),
-		daoOrderer.GetStop(),
-		daoOrderer.GetStopPrice(),
-		daoOrderer.GetSTP(),
-		daoOrderer.GetSymbol(),
-		daoOrderer.GetTags(),
-		daoOrderer.GetTimeInForce(),
-		daoOrderer.GetTradeType(),
-		daoOrderer.GetVisibleSize(),
-		daoOrderer.GetCancelAfter(),
-		daoOrderer.GetKucoinCreatedAt(),
-		daoOrderer.GetCancelExist(),
-		daoOrderer.GetHidden(),
-		daoOrderer.GetIceBerg(),
-		daoOrderer.GetIsActive(),
-		daoOrderer.GetPostOnly(),
-		daoOrderer.GetStopTriggered(),
+		daoTickerer.GetID(),
+		daoTickerer.GetAveragePrice(),
+		daoTickerer.GetBuy(),
+		daoTickerer.GetChangePrice(),
+		daoTickerer.GetChangeRate(),
+		daoTickerer.GetHigh(),
+		daoTickerer.GetLast(),
+		daoTickerer.GetLow(),
+		daoTickerer.GetMakerCoefficient(),
+		daoTickerer.GetMakerFeeRate(),
+		daoTickerer.GetSell(),
+		daoTickerer.GetSymbol(),
+		daoTickerer.GetSymbolName(),
+		daoTickerer.GetTakerCoefficient(),
+		daoTickerer.GetTakerFeeRate(),
+		daoTickerer.GetVol(),
+		daoTickerer.GetVolValue(),
 	)
 
 	repository.GetRuntimeLogger().
 		WithFields(fields).
-		WithField(object.URIFieldDAOOrder, daoOrder).
+		WithField(object.URIFieldDAOTicker, daoTicker).
 		Debug(object.URIEmpty)
 
 	gormDB := repository.GetDB().
 		WithContext(ctx).
 		Where(map[string]any{
-			"id": daoOrderer.GetID(),
+			"id": daoTickerer.GetID(),
 		}).
-		Updates(daoOrder.GetMap())
+		Updates(daoTicker.GetMap())
 	if err := gormDB.Error; err != nil {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
 			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderRepositoryUpdate.Error())
+			Error(object.ErrTickerRepositoryUpdate.Error())
 		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryUpdate.Error())
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryUpdate.Error())
 
 		return time.Time{}, err
 	}
@@ -1530,21 +1138,21 @@ func (repository *orderRepository) Update(
 	if gormDB.RowsAffected == 0 {
 		repository.GetRuntimeLogger().
 			WithFields(fields).
-			WithField(object.URIFieldError, object.ErrOrderRepositoryUpdate).
-			Error(object.ErrOrderRepositoryUpdate.Error())
-		traceSpan.RecordError(object.ErrOrderRepositoryUpdate)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderRepositoryUpdate.Error())
+			WithField(object.URIFieldError, object.ErrTickerRepositoryUpdate).
+			Error(object.ErrTickerRepositoryUpdate.Error())
+		traceSpan.RecordError(object.ErrTickerRepositoryUpdate)
+		traceSpan.SetStatus(codes.Error, object.ErrTickerRepositoryUpdate.Error())
 
-		return time.Time{}, object.ErrOrderRepositoryUpdate
+		return time.Time{}, object.ErrTickerRepositoryUpdate
 	}
 
-	return daoOrder.GetUpdatedAt(), nil
+	return daoTicker.GetUpdatedAt(), nil
 }
 
 // WithOptioners is a function.
-func (repository *orderRepository) WithOptioners(
-	optioners ...orderRepositoryOptioner,
-) *orderRepository {
+func (repository *tickerRepository) WithOptioners(
+	optioners ...tickerRepositoryOptioner,
+) *tickerRepository {
 	newRepository := repository.clone()
 	for _, optioner := range optioners {
 		optioner.apply(newRepository)
@@ -1553,14 +1161,14 @@ func (repository *orderRepository) WithOptioners(
 	return newRepository
 }
 
-func (repository *orderRepository) clone() *orderRepository {
+func (repository *tickerRepository) clone() *tickerRepository {
 	newRepository := repository
 
 	return newRepository
 }
 
-func (optionerFunc orderRepositoryOptionerFunc) apply(
-	repository *orderRepository,
+func (optionerFunc tickerRepositoryOptionerFunc) apply(
+	repository *tickerRepository,
 ) {
 	optionerFunc(repository)
 }

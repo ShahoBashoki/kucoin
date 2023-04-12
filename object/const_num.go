@@ -11,4 +11,6 @@ const (
 	NUMRuntimeConfigDefaultRuntimeKucoinPaginationRequestSize = 500
 	// NUMSystemGracefulShutdown is a variable.
 	NUMSystemGracefulShutdown = 5 * time.Second
+	// NUMTopTickerChangeRateCount is a variable.
+	NUMTopTickerChangeRateCount = 10
 )
