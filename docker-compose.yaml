@@ -68,7 +68,7 @@ services:
       - '/bin/sh'
       - '-ecx'
       - make migrate-up CI="false" MIGRATE_DSN="cockroachdb://root@cockroach:26257/defaultdb?sslmode=disable" MIGRATE_VER="production"
-    image: golang:1.20.2-alpine3.17
+    image: golang:1.20.3-alpine3.17
     labels:
       namespace: migrate
     restart: 'no'
@@ -156,14 +156,14 @@ services:
     env_file: .env
     expose:
       - 8080
-    image: golang:1.20.2-alpine3.17
+    image: golang:1.20.3-alpine3.17
     # healthcheck:
     #   interval: 10s
     #   retries: 5
     #   start_period: 5s
     #   test: wget --no-verbose --tries=1 --spider http://server:8080/healthz
     #   timeout: 5s
-    # image: golang:1.20.2-alpine3.17
+    # image: golang:1.20.3-alpine3.17
     labels:
       namespace: server
     ports:

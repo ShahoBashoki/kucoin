@@ -4,8 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/ShahoBashoki/kucoin/config"
+	"github.com/ShahoBashoki/kucoin/log"
 	"github.com/ShahoBashoki/kucoin/object/dao"
+	"github.com/ShahoBashoki/kucoin/util"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 )
 
@@ -84,7 +88,9 @@ type (
 	}
 
 	// Repositorier is an interface.
-	Repositorier any
+	Repositorier interface {
+		GetOrderRepositorier
+	}
 
 	// GetRepositorier is an interface.
 	GetRepositorier interface {
@@ -92,7 +98,9 @@ type (
 		GetRepositorier() Repositorier
 	}
 
-	repository struct{}
+	repository struct {
+		orderRepositorier OrderRepositorier
+	}
 
 	optionRepositorier interface {
 		apply(*repository)
@@ -101,15 +109,46 @@ type (
 	optionRepositorierFunc func(*repository)
 )
 
-var _ Repositorier = (*repository)(nil)
+var (
+	_ GetOrderRepositorier = (*repository)(nil)
+	_ Repositorier         = (*repository)(nil)
+)
 
 // NewRepository is a function.
 func NewRepository(
 	optioners ...optionRepositorier,
 ) *repository {
-	repository := &repository{}
+	repository := &repository{
+		orderRepositorier: nil,
+	}
 
 	return repository.WithOptioners(optioners...)
+}
+
+// WithOrderRepositorier is a function.
+func WithOrderRepositorier(
+	configConfigger config.Configger,
+	logRuntimeLogger log.RuntimeLogger,
+	traceTracer trace.Tracer,
+	utilUUIDer util.UUIDer,
+	optioners ...orderRepositoryOptioner,
+) optionRepositorier {
+	return optionRepositorierFunc(func(
+		repository *repository,
+	) {
+		repository.orderRepositorier = NewOrderRepository(
+			configConfigger,
+			logRuntimeLogger,
+			traceTracer,
+			utilUUIDer,
+			optioners...,
+		)
+	})
+}
+
+// GetOrderRepositorier is a function.
+func (repository *repository) GetOrderRepositorier() OrderRepositorier {
+	return repository.orderRepositorier
 }
 
 // WithOptioners is a function.

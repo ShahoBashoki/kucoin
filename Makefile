@@ -131,6 +131,10 @@ fix: ## Fix
 fmt: ## Format
 	go fmt $(PKG_LIST)
 
+.PHONY: generate
+generate: ## Generate
+	go generate $(PKG_LIST)
+
 .PHONY: git-chglog
 git-chglog: ## Git Changelog
 	go install github.com/git-chglog/git-chglog/cmd/git-chglog@v0.15.4

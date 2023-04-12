@@ -13,8 +13,8 @@ type (
 		GetValidateMapRules() map[string][]map[string]any
 		// GetNode is a function.
 		GetNode() string
-		// GetClientPaginationRequestSizeMax is a function.
-		GetClientPaginationRequestSizeMax() int
+		// GetKucoinPaginationRequestSize is a function.
+		GetKucoinPaginationRequestSize() int64
 	}
 
 	// GetRuntimeConfigger is an interface.
@@ -24,9 +24,9 @@ type (
 	}
 
 	runtimeConfig struct {
-		validateMapRules               map[string][]map[string]any
-		node                           string
-		clientPaginationRequestSizeMax int
+		validateMapRules            map[string][]map[string]any
+		node                        string
+		kucoinPaginationRequestSize int64
 	}
 
 	runtimeConfigOptioner interface {
@@ -47,9 +47,9 @@ func NewRuntimeConfig(
 	optioners ...runtimeConfigOptioner,
 ) *runtimeConfig {
 	runtimeConfig := &runtimeConfig{
-		validateMapRules:               map[string][]map[string]any{},
-		node:                           object.URIEmpty,
-		clientPaginationRequestSizeMax: 0,
+		validateMapRules:            map[string][]map[string]any{},
+		node:                        object.URIEmpty,
+		kucoinPaginationRequestSize: 0,
 	}
 
 	return runtimeConfig.WithOptioners(optioners...)
@@ -77,14 +77,14 @@ func WithRuntimeConfigNode(
 	})
 }
 
-// WithRuntimeConfigClientPaginationRequestSizeMax is a function.
-func WithRuntimeConfigClientPaginationRequestSizeMax(
-	clientPaginationRequestSizeMax int,
+// WithRuntimeConfigKucoinPaginationRequestSize is a function.
+func WithRuntimeConfigKucoinPaginationRequestSize(
+	kucoinPaginationRequestSize int64,
 ) runtimeConfigOptioner {
 	return runtimeConfigOptionerFunc(func(
 		config *runtimeConfig,
 	) {
-		config.clientPaginationRequestSizeMax = clientPaginationRequestSizeMax
+		config.kucoinPaginationRequestSize = kucoinPaginationRequestSize
 	})
 }
 
@@ -98,17 +98,17 @@ func (config *runtimeConfig) GetNode() string {
 	return config.node
 }
 
-// GetClientPaginationRequestSizeMax is a function.
-func (config *runtimeConfig) GetClientPaginationRequestSizeMax() int {
-	return config.clientPaginationRequestSizeMax
+// GetKucoinPaginationRequestSize is a function.
+func (config *runtimeConfig) GetKucoinPaginationRequestSize() int64 {
+	return config.kucoinPaginationRequestSize
 }
 
 // GetMap is a function.
 func (config *runtimeConfig) GetMap() map[string]any {
 	return map[string]any{
-		"validate_map_rules":                 config.GetValidateMapRules(),
-		"node":                               config.GetNode(),
-		"client_pagination_request_size_max": config.GetClientPaginationRequestSizeMax(),
+		"validate_map_rules":             config.GetValidateMapRules(),
+		"node":                           config.GetNode(),
+		"kucoin_pagination_request_size": config.GetKucoinPaginationRequestSize(),
 	}
 }
 

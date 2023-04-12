@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/Kucoin/kucoin-go-sdk"
 	"github.com/ShahoBashoki/kucoin/config"
 	"github.com/ShahoBashoki/kucoin/log"
 	"github.com/ShahoBashoki/kucoin/repository"
@@ -10,7 +11,9 @@ import (
 
 type (
 	// Servicer is an interface.
-	Servicer any
+	Servicer interface {
+		GetOrderServicer
+	}
 
 	// GetServicer is an interface.
 	GetServicer interface {
@@ -26,7 +29,9 @@ type (
 		)
 	}
 
-	service struct{}
+	service struct {
+		orderServicer OrderServicer
+	}
 )
 
 var _ Servicer = (*service)(nil)
@@ -38,8 +43,30 @@ func NewServicer(
 	logRuntimeLogger log.RuntimeLogger,
 	traceTracer trace.Tracer,
 	utilUUIDer util.UUIDer,
+	kucoinAPIService *kucoin.ApiService,
 ) Servicer {
-	service := &service{}
+	orderServicer := NewOrderServicer(
+		configConfigger,
+		repositorier.GetOrderRepositorier(),
+		logRuntimeLogger,
+		traceTracer,
+		utilUUIDer,
+		kucoinAPIService,
+	)
+
+	service := &service{
+		orderServicer: orderServicer,
+	}
+
+	orderServicerWithTypeCheck, ok := orderServicer.(WithServicer)
+	if ok {
+		orderServicerWithTypeCheck.WithServicer(service)
+	}
 
 	return service
+}
+
+// GetOrderServicer is a function.
+func (service *service) GetOrderServicer() OrderServicer {
+	return service.orderServicer
 }

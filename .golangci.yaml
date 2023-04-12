@@ -2,19 +2,37 @@ issues:
   exclude-rules:
     - linters:
         - cyclop
-      path: repository/arvan_channel_repository\.go
+      path: object/dao/order\.go
     - linters:
         - cyclop
-      path: repository/lesson_repository\.go
+      path: object/om/order\.go
     - linters:
         - cyclop
-      path: repository/package_repository\.go
+      path: repository/order_repository\.go
     - linters:
         - cyclop
-      path: repository/user_info_repository\.go
+      path: service/order_service\.go
     - linters:
         - gocognit
-      path: repository/arvan_channel_repository\.go
+      path: object/dao/order\.go
+    - linters:
+        - gocognit
+      path: object/om/order\.go
+    - linters:
+        - gocognit
+      path: repository/order_repository\.go
+    - linters:
+        - gocritic
+      path: service/order_service\.go
+    - linters:
+        - gocyclo
+      path: object/dao/order\.go
+    - linters:
+        - gocyclo
+      path: object/om/order\.go
+    - linters:
+        - gocyclo
+      path: repository/order_repository\.go
     - linters:
         - interfacebloat
       path: config/config\.go
@@ -23,16 +41,13 @@ issues:
       path: config/log_config\.go
     - linters:
         - interfacebloat
-      path: object/dao/arvan_channel\.go
+      path: object/dao/order\.go
+    - linters:
+        - interfacebloat
+      path: object/om/order\.go
     - linters:
         - interfacebloat
       path: server/server\.go
-    - linters:
-        - tagliatelle
-      path: object/dto/payment_gateway_callback_request\.go
-    - linters:
-        - tagliatelle
-      path: object/om/payment_gateway_callback\.go
   exclude-use-default: false
   fix: true
   max-issues-per-linter: 0
@@ -61,6 +76,7 @@ linters-settings:
       - encoding/json
       - errors
       - fmt
+      - github.com/Kucoin/kucoin-go-sdk
       - github.com/ShahoBashoki/kucoin/config
       - github.com/ShahoBashoki/kucoin/helper
       - github.com/ShahoBashoki/kucoin/log
@@ -224,22 +240,24 @@ linters-settings:
   importas:
     no-extra-aliases: true
     alias:
+      - alias: kucoin
+        pkg: github.com/Kucoin/kucoin-go-sdk
+      - alias: grpcTags
+        pkg: github.com/grpc-ecosystem/go-grpc-middleware/tags
+      - alias: locales
+        pkg: github.com/go-playground/locales/en
+      - alias: lumberjack
+        pkg: gopkg.in/natefinch/lumberjack.v2
       - alias: sdkResource
         pkg: go.opentelemetry.io/otel/sdk/resource
       - alias: sdkTrace
         pkg: go.opentelemetry.io/otel/sdk/trace
       - alias: semconv
         pkg: go.opentelemetry.io/otel/semconv/v1.17.0
-      - alias: locales
-        pkg: github.com/go-playground/locales/en
-      - alias: universalTranslator
-        pkg: github.com/go-playground/universal-translator
       - alias: stdLog
         pkg: log
-      - alias: lumberjack
-        pkg: gopkg.in/natefinch/lumberjack.v2
-      - alias: grpcTags
-        pkg: github.com/grpc-ecosystem/go-grpc-middleware/tags
+      - alias: universalTranslator
+        pkg: github.com/go-playground/universal-translator
   loggercheck:
     kitlog: false
     klog: false

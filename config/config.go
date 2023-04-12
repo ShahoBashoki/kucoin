@@ -10,6 +10,7 @@ type (
 	// Configger interface is the core configuration.
 	Configger interface {
 		GetDatabaseConfigger
+		GetKucoinConfigger
 		GetLogConfigger
 		GetOtelConfigger
 		GetRedpandaConfigger
@@ -25,6 +26,7 @@ type (
 
 	config struct {
 		databaseConfigger DatabaseConfigger
+		kucoinConfigger   KucoinConfigger
 		logConfigger      LogConfigger
 		otelConfigger     OtelConfigger
 		redpandaConfigger RedpandaConfigger
@@ -42,6 +44,7 @@ type (
 var (
 	_ Configger            = (*config)(nil)
 	_ GetDatabaseConfigger = (*config)(nil)
+	_ GetKucoinConfigger   = (*config)(nil)
 	_ GetLogConfigger      = (*config)(nil)
 	_ GetOtelConfigger     = (*config)(nil)
 	_ GetRedpandaConfigger = (*config)(nil)
@@ -58,6 +61,7 @@ func NewConfig(
 ) *config {
 	config := &config{
 		databaseConfigger: nil,
+		kucoinConfigger:   nil,
 		logConfigger:      nil,
 		otelConfigger:     nil,
 		redpandaConfigger: nil,
@@ -76,6 +80,17 @@ func WithDatabaseConfigger(
 		config *config,
 	) {
 		config.databaseConfigger = NewDatabaseConfig(optioners...)
+	})
+}
+
+// WithKucoinConfigger is a function.
+func WithKucoinConfigger(
+	optioners ...kucoinConfigOptioner,
+) configOptioner {
+	return configOptionerFunc(func(
+		config *config,
+	) {
+		config.kucoinConfigger = NewKucoinConfig(optioners...)
 	})
 }
 
@@ -139,6 +154,11 @@ func (config *config) GetDatabaseConfigger() DatabaseConfigger {
 	return config.databaseConfigger
 }
 
+// GetKucoinConfigger is a function.
+func (config *config) GetKucoinConfigger() KucoinConfigger {
+	return config.kucoinConfigger
+}
+
 // GetLogConfigger is a function.
 func (config *config) GetLogConfigger() LogConfigger {
 	return config.logConfigger
@@ -168,6 +188,7 @@ func (config *config) GetServerConfigger() ServerConfigger {
 func (config *config) GetMap() map[string]any {
 	return map[string]any{
 		"database_configger": config.GetDatabaseConfigger(),
+		"kucoin_configger":   config.GetKucoinConfigger(),
 		"logger_configger":   config.GetLogConfigger(),
 		"otel_configger":     config.GetOtelConfigger(),
 		"redpanda_configger": config.GetRedpandaConfigger(),

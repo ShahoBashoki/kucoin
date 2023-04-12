@@ -60,7 +60,6 @@ var _ Serverer = (*server)(nil)
 // NewServerrer is a function.
 func NewServerrer(
 	configConfigger config.Configger,
-	ctx context.Context,
 	logRuntimeLogger log.RuntimeLogger,
 	servicer service.Servicer,
 	traceTracer trace.Tracer,

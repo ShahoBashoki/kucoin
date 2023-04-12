@@ -10,13 +10,6 @@ import (
 
 type (
 
-	// DAOer is an interface.
-	DAOer interface {
-		DAOJoiner
-		// GetID is a function.
-		GetID() uuid.UUID
-	}
-
 	// DAOJoiner is an interface.
 	DAOJoiner interface {
 		object.GetMap
@@ -28,11 +21,11 @@ type (
 		GetDeletedAt() sql.NullTime
 	}
 
-	dao struct {
-		createdAt time.Time
-		updatedAt time.Time
-		deletedAt sql.NullTime
-		id        uuid.UUID
+	// DAOer is an interface.
+	DAOer interface {
+		DAOJoiner
+		// GetID is a function.
+		GetID() uuid.UUID
 	}
 
 	daoJoin struct {
@@ -40,4 +33,28 @@ type (
 		updatedAt time.Time
 		deletedAt sql.NullTime
 	}
+
+	dao struct {
+		daoJoin
+		id uuid.UUID
+	}
 )
+
+// DAOJoinerComparer is a function.
+func DAOJoinerComparer(
+	first DAOJoiner,
+	second DAOJoiner,
+) bool {
+	return first.GetCreatedAt().Equal(second.GetCreatedAt()) &&
+		first.GetUpdatedAt().Equal(second.GetUpdatedAt()) &&
+		first.GetDeletedAt() == second.GetDeletedAt()
+}
+
+// DAOerComparer is a function.
+func DAOerComparer(
+	first DAOer,
+	second DAOer,
+) bool {
+	return DAOJoinerComparer(first, second) &&
+		first.GetID() == second.GetID()
+}
