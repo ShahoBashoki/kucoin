@@ -9,7 +9,6 @@ import (
 	"github.com/ShahoBashoki/kucoin/log"
 	"github.com/ShahoBashoki/kucoin/object"
 	"github.com/ShahoBashoki/kucoin/object/dao"
-	"github.com/ShahoBashoki/kucoin/object/dto"
 	"github.com/ShahoBashoki/kucoin/repository"
 	"github.com/ShahoBashoki/kucoin/server"
 	"github.com/ShahoBashoki/kucoin/service"
@@ -230,56 +229,13 @@ func main() {
 		utilUUID,
 	)
 
-	deletedAt, err := servicer.GetOrderServicer().DeleteAll(ctx)
-	if err != nil {
+	deletedAt, errTickerDeleteAll := servicer.GetTickerServicer().DeleteAll(ctx)
+	if errTickerDeleteAll != nil {
 		logRuntimeLog.
 			WithFields(fields).
-			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderServiceDeleteAll.Error())
-		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderServiceDeleteAll.Error())
-	}
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldDeletedAt, deletedAt).
-		Debug(object.URIEmpty)
-
-	dtoOrderRequest := dto.NewOrderRequest(
-		object.URIEmpty,
-		object.URIEmpty,
-		object.URIEmpty,
-		object.URIEmpty,
-		object.OrderStateTypeActive,
-		object.URIEmpty,
-		object.OrderTypeTypeTrade,
-	)
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldDTOOrderRequest, dtoOrderRequest).
-		Debug(object.URIEmpty)
-
-	if err = servicer.GetOrderServicer().GetListFromRemote(
-		ctx,
-		dtoOrderRequest,
-		1,
-	); err != nil {
-		logRuntimeLog.
-			WithFields(fields).
-			WithField(object.URIFieldError, err).
-			Error(object.ErrOrderServiceGetListFromRemote.Error())
-		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrOrderServiceGetListFromRemote.Error())
-	}
-
-	deletedAt, err = servicer.GetTickerServicer().DeleteAll(ctx)
-	if err != nil {
-		logRuntimeLog.
-			WithFields(fields).
-			WithField(object.URIFieldError, err).
+			WithField(object.URIFieldError, errTickerDeleteAll).
 			Error(object.ErrTickerServiceDeleteAll.Error())
-		traceSpan.RecordError(err)
+		traceSpan.RecordError(errTickerDeleteAll)
 		traceSpan.SetStatus(codes.Error, object.ErrTickerServiceDeleteAll.Error())
 	}
 
@@ -323,14 +279,14 @@ func main() {
 		WithField(object.URIFieldDAOTickerFilter, daoTickerFilter).
 		Debug(object.URIEmpty)
 
-	omTickers, daoCursorer, err := servicer.GetTickerServicer().
+	omTickers, daoCursorer, errTickerGetListFromRepository := servicer.GetTickerServicer().
 		GetListFromRepository(ctx, daoPagination, daoTickerFilter)
-	if err != nil {
+	if errTickerGetListFromRepository != nil {
 		logRuntimeLog.
 			WithFields(fields).
-			WithField(object.URIFieldError, err).
+			WithField(object.URIFieldError, errTickerGetListFromRepository).
 			Error(object.ErrTickerServiceGetListFromRepository.Error())
-		traceSpan.RecordError(err)
+		traceSpan.RecordError(errTickerGetListFromRepository)
 		traceSpan.SetStatus(codes.Error, object.ErrTickerServiceGetListFromRepository.Error())
 	}
 
@@ -339,6 +295,33 @@ func main() {
 		WithField(object.URIFieldOMTickers, omTickers).
 		WithField(object.URIFieldDAOCursorer, daoCursorer).
 		Debug(object.URIEmpty)
+
+	for key, omTicker := range omTickers {
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldKey, key).
+			WithField(object.URIFieldOMTicker, omTicker).
+			Debug(object.URIEmpty)
+
+		marketRatio, errOrderBookGetMarketRatioFromRemote := servicer.GetOrderBookServicer().
+			GetMarketRatioFromRemote(ctx, omTicker.GetSymbol(), 2)
+		if errOrderBookGetMarketRatioFromRemote != nil {
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldError, errOrderBookGetMarketRatioFromRemote).
+				Error(object.ErrOrderBookServiceGetListFromRepository.Error())
+			traceSpan.RecordError(errOrderBookGetMarketRatioFromRemote)
+			traceSpan.SetStatus(
+				codes.Error,
+				object.ErrOrderBookServiceGetListFromRepository.Error(),
+			)
+		}
+
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldMarketRatio, marketRatio).
+			Debug(object.URIEmpty)
+	}
 
 	if err = serverer.Run(ctx); err != nil {
 		logRuntimeLog.

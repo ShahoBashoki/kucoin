@@ -17,6 +17,12 @@ var (
 	ErrJaegerNew = errors.New("failed to create a jaeger exporter")
 	// ErrKucoinServiceReadPaginationData is an error.
 	ErrKucoinServiceReadPaginationData = errors.New("failed to kucoin service read pagination data")
+	// ErrOrderBookKucoinServiceGetList is an error.
+	ErrOrderBookKucoinServiceGetList = errors.New("failed to order book kucoin service get list")
+	// ErrOrderBookServiceGetListFromRepository is an error.
+	ErrOrderBookServiceGetListFromRepository = errors.New(
+		"failed to order book service get list from repository",
+	)
 	// ErrOrderKucoinServiceGetList is an error.
 	ErrOrderKucoinServiceGetList = errors.New("failed to order kucoin service get list")
 	// ErrOrderRepositoryCreate is an error.
@@ -47,6 +53,8 @@ var (
 	ErrSDKResourceNew = errors.New("failed to create a new resource")
 	// ErrSQL is an error.
 	ErrSQL = errors.New("sql error")
+	// ErrSTRCONVParseFloat is an error.
+	ErrSTRCONVParseFloat = errors.New("failed to strconv parse float")
 	// ErrServerRun is an error.
 	ErrServerRun = errors.New("failed to run http server")
 	// ErrTickerKucoinServiceGetList is an error.

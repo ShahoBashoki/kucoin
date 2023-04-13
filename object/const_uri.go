@@ -3,6 +3,10 @@ package object
 const (
 	// URIEmpty is an uri.
 	URIEmpty = ""
+	// URIFieldAsksValue is an uri.
+	URIFieldAsksValue = "asks_value"
+	// URIFieldBidsValue is an uri.
+	URIFieldBidsValue = "bids_value"
 	// URIFieldBody is an uri.
 	URIFieldBody = "body"
 	// URIFieldDAOCursor is an uri.
@@ -47,6 +51,8 @@ const (
 	URIFieldKucoinPaginationParam = "kucoin_pagination_param"
 	// URIFieldKucoinTickersModel is an uri.
 	URIFieldKucoinTickersModel = "kucoin_tickers_model"
+	// URIFieldMarketRatio is an uri.
+	URIFieldMarketRatio = "market_ratio"
 	// URIFieldNowUTC is an uri.
 	URIFieldNowUTC = "now_utc"
 	// URIFieldOMOrder is an uri.

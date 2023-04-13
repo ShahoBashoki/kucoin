@@ -20,6 +20,9 @@ issues:
       path: repository/ticker_repository\.go
     - linters:
         - cyclop
+      path: service/order_book_service\.go
+    - linters:
+        - cyclop
       path: service/order_service\.go
     - linters:
         - gocognit

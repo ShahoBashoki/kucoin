@@ -12,6 +12,7 @@ import (
 type (
 	// Servicer is an interface.
 	Servicer interface {
+		GetOrderBookServicer
 		GetOrderServicer
 		GetTickerServicer
 	}
@@ -31,8 +32,9 @@ type (
 	}
 
 	service struct {
-		orderServicer  OrderServicer
-		tickerServicer TickerServicer
+		orderBookServicer OrderBookServicer
+		orderServicer     OrderServicer
+		tickerServicer    TickerServicer
 	}
 )
 
@@ -47,6 +49,14 @@ func NewServicer(
 	utilUUIDer util.UUIDer,
 	kucoinAPIService *kucoin.ApiService,
 ) Servicer {
+	orderBookServicer := NewOrderBookServicer(
+		configConfigger,
+		logRuntimeLogger,
+		traceTracer,
+		utilUUIDer,
+		kucoinAPIService,
+	)
+
 	orderServicer := NewOrderServicer(
 		configConfigger,
 		repositorier.GetOrderRepositorier(),
@@ -66,8 +76,14 @@ func NewServicer(
 	)
 
 	service := &service{
-		orderServicer:  orderServicer,
-		tickerServicer: tickerServicer,
+		orderBookServicer: orderBookServicer,
+		orderServicer:     orderServicer,
+		tickerServicer:    tickerServicer,
+	}
+
+	orderBookServicerWithTypeCheck, ok := orderBookServicer.(WithServicer)
+	if ok {
+		orderBookServicerWithTypeCheck.WithServicer(service)
 	}
 
 	orderServicerWithTypeCheck, ok := orderServicer.(WithServicer)
@@ -81,6 +97,11 @@ func NewServicer(
 	}
 
 	return service
+}
+
+// GetOrderBookServicer is a function.
+func (service *service) GetOrderBookServicer() OrderBookServicer {
+	return service.orderBookServicer
 }
 
 // GetOrderServicer is a function.
