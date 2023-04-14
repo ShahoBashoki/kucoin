@@ -118,7 +118,7 @@ func (orderRequest *orderRequest) GetTradeType() object.OrderTypeType {
 func (orderRequest *orderRequest) GetMap() map[string]any {
 	return map[string]any{
 		"endAt":     orderRequest.GetEndAt(),
-		"orderType": string(orderRequest.GetOrderType()),
+		"type":      string(orderRequest.GetOrderType()),
 		"side":      string(orderRequest.GetSide()),
 		"startAt":   orderRequest.GetStartAt(),
 		"status":    string(orderRequest.GetStatus()),

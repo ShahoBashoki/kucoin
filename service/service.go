@@ -12,6 +12,7 @@ import (
 type (
 	// Servicer is an interface.
 	Servicer interface {
+		GetKlineServicer
 		GetOrderBookServicer
 		GetOrderServicer
 		GetTickerServicer
@@ -32,6 +33,7 @@ type (
 	}
 
 	service struct {
+		klineServicer     KlineServicer
 		orderBookServicer OrderBookServicer
 		orderServicer     OrderServicer
 		tickerServicer    TickerServicer
@@ -49,6 +51,14 @@ func NewServicer(
 	utilUUIDer util.UUIDer,
 	kucoinAPIService *kucoin.ApiService,
 ) Servicer {
+	klineServicer := NewKlineServicer(
+		configConfigger,
+		logRuntimeLogger,
+		traceTracer,
+		utilUUIDer,
+		kucoinAPIService,
+	)
+
 	orderBookServicer := NewOrderBookServicer(
 		configConfigger,
 		logRuntimeLogger,
@@ -76,9 +86,15 @@ func NewServicer(
 	)
 
 	service := &service{
+		klineServicer:     klineServicer,
 		orderBookServicer: orderBookServicer,
 		orderServicer:     orderServicer,
 		tickerServicer:    tickerServicer,
+	}
+
+	klineServicerWithTypeCheck, ok := klineServicer.(WithServicer)
+	if ok {
+		klineServicerWithTypeCheck.WithServicer(service)
 	}
 
 	orderBookServicerWithTypeCheck, ok := orderBookServicer.(WithServicer)
@@ -97,6 +113,11 @@ func NewServicer(
 	}
 
 	return service
+}
+
+// GetKlineServicer is a function.
+func (service *service) GetKlineServicer() KlineServicer {
+	return service.klineServicer
 }
 
 // GetOrderBookServicer is a function.

@@ -15,6 +15,12 @@ var (
 	ErrHTTPResponseBodyClose = errors.New("failed to close http response body")
 	// ErrJaegerNew is an error.
 	ErrJaegerNew = errors.New("failed to create a jaeger exporter")
+	// ErrKlineKucoinServiceGetList is an error.
+	ErrKlineKucoinServiceGetList = errors.New("failed to kline kucoin service get list")
+	// ErrKlineServiceGetOpenLowEqualityFromRemote is an error.
+	ErrKlineServiceGetOpenLowEqualityFromRemote = errors.New(
+		"failed to kline service get open low equality from remote",
+	)
 	// ErrKucoinServiceReadPaginationData is an error.
 	ErrKucoinServiceReadPaginationData = errors.New("failed to kucoin service read pagination data")
 	// ErrOrderBookKucoinServiceGetList is an error.

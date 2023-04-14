@@ -2,6 +2,9 @@ issues:
   exclude-rules:
     - linters:
         - cyclop
+      path: main\.go
+    - linters:
+        - cyclop
       path: object/dao/order\.go
     - linters:
         - cyclop
@@ -24,6 +27,9 @@ issues:
     - linters:
         - cyclop
       path: service/order_service\.go
+    - linters:
+        - cyclop
+      path: util/kline_type_to_second\.go
     - linters:
         - gocognit
       path: object/dao/order\.go

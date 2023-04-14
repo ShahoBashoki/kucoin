@@ -9,6 +9,7 @@ import (
 	"github.com/ShahoBashoki/kucoin/log"
 	"github.com/ShahoBashoki/kucoin/object"
 	"github.com/ShahoBashoki/kucoin/object/dao"
+	"github.com/ShahoBashoki/kucoin/object/dto"
 	"github.com/ShahoBashoki/kucoin/repository"
 	"github.com/ShahoBashoki/kucoin/server"
 	"github.com/ShahoBashoki/kucoin/service"
@@ -229,98 +230,164 @@ func main() {
 		utilUUID,
 	)
 
-	deletedAt, errTickerDeleteAll := servicer.GetTickerServicer().DeleteAll(ctx)
-	if errTickerDeleteAll != nil {
-		logRuntimeLog.
-			WithFields(fields).
-			WithField(object.URIFieldError, errTickerDeleteAll).
-			Error(object.ErrTickerServiceDeleteAll.Error())
-		traceSpan.RecordError(errTickerDeleteAll)
-		traceSpan.SetStatus(codes.Error, object.ErrTickerServiceDeleteAll.Error())
-	}
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldDeletedAt, deletedAt).
-		Debug(object.URIEmpty)
-
-	if err = servicer.GetTickerServicer().GetListFromRemote(
-		ctx,
-	); err != nil {
-		logRuntimeLog.
-			WithFields(fields).
-			WithField(object.URIFieldError, err).
-			Error(object.ErrTickerKucoinServiceGetList.Error())
-		traceSpan.RecordError(err)
-		traceSpan.SetStatus(codes.Error, object.ErrTickerKucoinServiceGetList.Error())
-	}
-
-	daoCursor := dao.NewCursor(0)
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldDAOCursor, daoCursor).
-		Debug(object.URIEmpty)
-
-	daoPagination := dao.NewPagination(daoCursor, object.NUMTopTickerChangeRateCount)
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldDAOPagination, daoPagination).
-		Debug(object.URIEmpty)
-
-	daoTickerFilter := dao.NewTickerFilter(
-		object.URIEmpty,
-		true,
-	)
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldDAOTickerFilter, daoTickerFilter).
-		Debug(object.URIEmpty)
-
-	omTickers, daoCursorer, errTickerGetListFromRepository := servicer.GetTickerServicer().
-		GetListFromRepository(ctx, daoPagination, daoTickerFilter)
-	if errTickerGetListFromRepository != nil {
-		logRuntimeLog.
-			WithFields(fields).
-			WithField(object.URIFieldError, errTickerGetListFromRepository).
-			Error(object.ErrTickerServiceGetListFromRepository.Error())
-		traceSpan.RecordError(errTickerGetListFromRepository)
-		traceSpan.SetStatus(codes.Error, object.ErrTickerServiceGetListFromRepository.Error())
-	}
-
-	logRuntimeLog.
-		WithFields(fields).
-		WithField(object.URIFieldOMTickers, omTickers).
-		WithField(object.URIFieldDAOCursorer, daoCursorer).
-		Debug(object.URIEmpty)
-
-	for key, omTicker := range omTickers {
-		logRuntimeLog.
-			WithFields(fields).
-			WithField(object.URIFieldKey, key).
-			WithField(object.URIFieldOMTicker, omTicker).
-			Debug(object.URIEmpty)
-
-		marketRatio, errOrderBookGetMarketRatioFromRemote := servicer.GetOrderBookServicer().
-			GetMarketRatioFromRemote(ctx, omTicker.GetSymbol(), 2)
-		if errOrderBookGetMarketRatioFromRemote != nil {
+	for {
+		deletedAt, errTickerDeleteAll := servicer.GetTickerServicer().DeleteAll(ctx)
+		if errTickerDeleteAll != nil {
 			logRuntimeLog.
 				WithFields(fields).
-				WithField(object.URIFieldError, errOrderBookGetMarketRatioFromRemote).
-				Error(object.ErrOrderBookServiceGetListFromRepository.Error())
-			traceSpan.RecordError(errOrderBookGetMarketRatioFromRemote)
-			traceSpan.SetStatus(
-				codes.Error,
-				object.ErrOrderBookServiceGetListFromRepository.Error(),
-			)
+				WithField(object.URIFieldError, errTickerDeleteAll).
+				Error(object.ErrTickerServiceDeleteAll.Error())
+			traceSpan.RecordError(errTickerDeleteAll)
+			traceSpan.SetStatus(codes.Error, object.ErrTickerServiceDeleteAll.Error())
 		}
 
 		logRuntimeLog.
 			WithFields(fields).
-			WithField(object.URIFieldMarketRatio, marketRatio).
+			WithField(object.URIFieldDeletedAt, deletedAt).
 			Debug(object.URIEmpty)
+
+		if err = servicer.GetTickerServicer().GetListFromRemote(
+			ctx,
+		); err != nil {
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldError, err).
+				Error(object.ErrTickerKucoinServiceGetList.Error())
+			traceSpan.RecordError(err)
+			traceSpan.SetStatus(codes.Error, object.ErrTickerKucoinServiceGetList.Error())
+		}
+
+		daoCursor := dao.NewCursor(0)
+
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldDAOCursor, daoCursor).
+			Debug(object.URIEmpty)
+
+		daoPagination := dao.NewPagination(daoCursor, object.NUMTopTickerChangeRateCount)
+
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldDAOPagination, daoPagination).
+			Debug(object.URIEmpty)
+
+		daoTickerFilter := dao.NewTickerFilter(
+			object.URIEmpty,
+			true,
+		)
+
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldDAOTickerFilter, daoTickerFilter).
+			Debug(object.URIEmpty)
+
+		omTickers, daoCursorer, errTickerGetListFromRepository := servicer.GetTickerServicer().
+			GetListFromRepository(ctx, daoPagination, daoTickerFilter)
+		if errTickerGetListFromRepository != nil {
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldError, errTickerGetListFromRepository).
+				Error(object.ErrTickerServiceGetListFromRepository.Error())
+			traceSpan.RecordError(errTickerGetListFromRepository)
+			traceSpan.SetStatus(codes.Error, object.ErrTickerServiceGetListFromRepository.Error())
+		}
+
+		logRuntimeLog.
+			WithFields(fields).
+			WithField(object.URIFieldOMTickers, omTickers).
+			WithField(object.URIFieldDAOCursorer, daoCursorer).
+			Debug(object.URIEmpty)
+
+		for key, omTicker := range omTickers {
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldKey, key).
+				WithField(object.URIFieldOMTicker, omTicker).
+				Debug(object.URIEmpty)
+
+			timeNowUnix := time.Now().Unix()
+			klineType := object.KlineTypeType5min
+			secondKlineType := util.KlineTypeToSecond(klineType)
+			modTime := timeNowUnix % secondKlineType
+			startAt := timeNowUnix - modTime - secondKlineType - object.NUMKlineDifference
+
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldTimeNowUnix, timeNowUnix).
+				WithField(object.URIFieldKlineType, klineType).
+				WithField(object.URIFieldSecondKlineType, secondKlineType).
+				WithField(object.URIFieldModTime, modTime).
+				WithField(object.URIFieldStartAt, startAt).
+				Debug(object.URIEmpty)
+
+			dtoKlineRequest := dto.NewKlineRequest(
+				klineType,
+				omTicker.GetSymbol(),
+				0,
+				startAt,
+			)
+
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldDTOKlineRequest, dtoKlineRequest).
+				Debug(object.URIEmpty)
+
+			openLowEquality, errKlineGetOpenLowEqualityFromRemote := servicer.GetKlineServicer().
+				GetOpenLowEqualityFromRemote(ctx, dtoKlineRequest)
+			if errKlineGetOpenLowEqualityFromRemote != nil {
+				logRuntimeLog.
+					WithFields(fields).
+					WithField(object.URIFieldError, errKlineGetOpenLowEqualityFromRemote).
+					Error(object.ErrKlineServiceGetOpenLowEqualityFromRemote.Error())
+				traceSpan.RecordError(errKlineGetOpenLowEqualityFromRemote)
+				traceSpan.SetStatus(
+					codes.Error,
+					object.ErrKlineServiceGetOpenLowEqualityFromRemote.Error(),
+				)
+			}
+
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldOpenLowEquality, openLowEquality).
+				Debug(object.URIEmpty)
+
+			if !openLowEquality {
+				logRuntimeLog.
+					WithFields(fields).
+					Debug(`!openLowEquality`)
+
+				continue
+			}
+
+			marketRatio, errOrderBookGetMarketRatioFromRemote := servicer.GetOrderBookServicer().
+				GetMarketRatioFromRemote(ctx, omTicker.GetSymbol(), 2)
+			if errOrderBookGetMarketRatioFromRemote != nil {
+				logRuntimeLog.
+					WithFields(fields).
+					WithField(object.URIFieldError, errOrderBookGetMarketRatioFromRemote).
+					Error(object.ErrOrderBookServiceGetListFromRepository.Error())
+				traceSpan.RecordError(errOrderBookGetMarketRatioFromRemote)
+				traceSpan.SetStatus(
+					codes.Error,
+					object.ErrOrderBookServiceGetListFromRepository.Error(),
+				)
+			}
+
+			logRuntimeLog.
+				WithFields(fields).
+				WithField(object.URIFieldMarketRatio, marketRatio).
+				Debug(object.URIEmpty)
+
+			if !marketRatio {
+				logRuntimeLog.
+					WithFields(fields).
+					Debug(`!marketRatio`)
+
+				continue
+			}
+		}
+
+		break
 	}
 
 	if err = serverer.Run(ctx); err != nil {

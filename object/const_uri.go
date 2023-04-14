@@ -29,6 +29,8 @@ const (
 	URIFieldDAOTickerers = "dao_tickerers"
 	// URIFieldDAOTickers is an uri.
 	URIFieldDAOTickers = "dao_tickers"
+	// URIFieldDTOKlineRequest is an uri.
+	URIFieldDTOKlineRequest = "dto_kline_request"
 	// URIFieldDTOOrderRequest is an uri.
 	URIFieldDTOOrderRequest = "dto_order_request"
 	// URIFieldDeletedAt is an uri.
@@ -43,16 +45,24 @@ const (
 	URIFieldJaegerExporter = "jaeger_exporter"
 	// URIFieldKey is an uri.
 	URIFieldKey = "key"
+	// URIFieldKucoinFullOrderBookModel is an uri.
+	URIFieldKucoinFullOrderBookModel = "kucoin_full_order_book_model"
+	// URIFieldKucoinKLinesModel is an uri.
+	URIFieldKucoinKLinesModel = "kucoin_kline_model"
 	// URIFieldKucoinOrdersModel is an uri.
 	URIFieldKucoinOrdersModel = "kucoin_orders_model"
 	// URIFieldKucoinPaginationModel is an uri.
 	URIFieldKucoinPaginationModel = "kucoin_pagination_model"
 	// URIFieldKucoinPaginationParam is an uri.
 	URIFieldKucoinPaginationParam = "kucoin_pagination_param"
+	// URIFieldKlineType is an uri.
+	URIFieldKlineType = "kucoin_type"
 	// URIFieldKucoinTickersModel is an uri.
 	URIFieldKucoinTickersModel = "kucoin_tickers_model"
 	// URIFieldMarketRatio is an uri.
 	URIFieldMarketRatio = "market_ratio"
+	// URIFieldModTime is an uri.
+	URIFieldModTime = "mod_time"
 	// URIFieldNowUTC is an uri.
 	URIFieldNowUTC = "now_utc"
 	// URIFieldOMOrder is an uri.
@@ -63,6 +73,8 @@ const (
 	URIFieldOMTicker = "om_ticker"
 	// URIFieldOMTickers is an uri.
 	URIFieldOMTickers = "om_tickers"
+	// URIFieldOpenLowEquality is an uri.
+	URIFieldOpenLowEquality = "open_low_equality"
 	// URIFieldOrderID is an uri.
 	URIFieldOrderID = "order_id"
 	// URIFieldParams is an uri.
@@ -75,8 +87,14 @@ const (
 	URIFieldRows = "rows"
 	// URIFieldSDKResourceResource is an uri.
 	URIFieldSDKResourceResource = "sdk_resource_resource"
+	// URIFieldSecondKlineType is an uri.
+	URIFieldSecondKlineType = "second_kline_type"
+	// URIFieldStartAt is an uri.
+	URIFieldStartAt = "start_at"
 	// URIFieldTickerID is an uri.
 	URIFieldTickerID = "ticker_id"
+	// URIFieldTimeNowUnix is an uri.
+	URIFieldTimeNowUnix = "time_now_unix"
 	// URIFieldTracer is an uri.
 	URIFieldTracer = "traceTracer"
 	// URIFieldTracerProvider is an uri.

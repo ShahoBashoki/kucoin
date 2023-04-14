@@ -20,7 +20,8 @@ type (
 		// GetMarketRatioFromRemote is a function.
 		GetMarketRatioFromRemote(
 			context.Context,
-			string, float64,
+			string,
+			float64,
 		) (bool, error)
 	}
 
@@ -183,7 +184,7 @@ func (service *orderBookService) GetMarketRatioFromRemote(
 
 	service.GetRuntimeLogger().
 		WithFields(fields).
-		WithField(object.URIFieldKucoinPaginationModel, kucoinFullOrderBookModel).
+		WithField(object.URIFieldKucoinFullOrderBookModel, kucoinFullOrderBookModel).
 		Debug(object.URIEmpty)
 
 	bidsValue := 0.0
